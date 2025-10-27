@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Forkcast Login", style: TextStyle(fontSize: 24.0)),
+        title: Center(
+          child: const Text("Forkcast Login", style: TextStyle(fontSize: 24.0)),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -22,27 +24,17 @@ class _SignupPageState extends State<SignupPage> {
             child: Column(
               children: [
                 SizedBox(
-                  height: 200,
+                  height: 300,
                   width: double.infinity,
-                  child: SvgPicture.asset(
-                    'assets/transparent-logo.svg',
-                    fit: BoxFit.contain,
-                  ),
+                  child: SvgPicture.asset('assets/transparent-logo.svg', fit: BoxFit.contain),
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: "Email"),
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                  ), // Handle verification later
                   validator: (value) {
                     if (value == null || !(value.contains("@"))) {
                       return "Please enter your email";
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: "Name"),
-                  validator: (value) {
-                    if (value == null || value.length < 3) {
-                      return "Please enter your name";
                     }
                     return null;
                   },
@@ -59,7 +51,7 @@ class _SignupPageState extends State<SignupPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: null, // Change this when making frontend reaction
-                  child: const Text("Sign Up"),
+                  child: const Text("Sign In"),
                 ),
               ],
             ),

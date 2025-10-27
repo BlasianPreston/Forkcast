@@ -1,4 +1,4 @@
-import 'package:calorie_app/signup_page.dart';
+import 'package:calorie_app/splash_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -30,23 +30,17 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: const ColorScheme.light(
+          primary: Colors.blue, // 👈 Changes focus, cursor, selection color
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white, // sets text/icon color
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        primaryColor: Colors.blueAccent,
       ),
-      home: const SignupPage(),
+      home: const SplashPage(),
     );
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
