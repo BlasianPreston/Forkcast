@@ -1,3 +1,4 @@
+import 'package:calorie_app/camera_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -26,7 +27,10 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   height: 300,
                   width: double.infinity,
-                  child: SvgPicture.asset('assets/transparent-logo.svg', fit: BoxFit.contain),
+                  child: SvgPicture.asset(
+                    'assets/transparent-logo.svg',
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 TextFormField(
                   decoration: const InputDecoration(
@@ -50,7 +54,12 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: null, // Change this when making frontend reaction
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => CameraPage()),
+                    );
+                  }, // Change this when making frontend reaction
                   child: const Text("Sign In"),
                 ),
               ],
