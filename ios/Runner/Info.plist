@@ -54,5 +54,7 @@
 	<!-- Microphone access (only if recording videos) -->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access to record videos with sound.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires camera access to take photos.</string>
 </dict>
 </plist>
