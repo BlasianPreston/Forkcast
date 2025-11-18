@@ -28,6 +28,7 @@ class PhotoPicker {
       final XFile? file = await _picker.pickImage(source: source);
       return file?.path;
     }
+    return null;
   }
 }
 
@@ -70,7 +71,7 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Camera Page"),
+        title: Center(child: const Text("Camera Page", style: TextStyle(fontSize: 24.0))),
         automaticallyImplyLeading: false,
       ),
       body: Padding(

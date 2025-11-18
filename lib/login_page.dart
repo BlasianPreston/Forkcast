@@ -1,4 +1,4 @@
-import 'package:calorie_app/camera_page.dart';
+import 'package:calorie_app/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => CameraPage()),
+                      MaterialPageRoute(builder: (_) => Navigation()),
                     );
                   }, // Change this when making frontend reaction
                   child: const Text("Sign In"),

@@ -12,26 +12,29 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Account Page", style: TextStyle(fontSize: 24.0)),
+        title: const Center(child: Text("Account Page", style: TextStyle(fontSize: 24.0))),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            Icon(
-              Icons.account_circle,
-              color: Colors.white,
-              size: 48.0,
-              semanticLabel: 'Profile Picture',
-            ),
-            Column(
-              children: [
-                const Text("Name"),
-                const SizedBox(height: 20),
-                const Text("Email"),
-              ],
-            ),
-          ],
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.account_circle,
+                color: Colors.white,
+                size: 48.0,
+                semanticLabel: 'Profile Picture',
+              ),
+              Column(
+                children: [
+                  const Text("Name"),
+                  const SizedBox(height: 20),
+                  const Text("Email"),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

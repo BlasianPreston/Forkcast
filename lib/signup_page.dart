@@ -1,3 +1,4 @@
+import 'package:calorie_app/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -58,7 +59,12 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: null, // Change this when making frontend reaction
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => Navigation()),
+                    );
+                  }, // Change this when making frontend reaction
                   child: const Text("Sign Up"),
                 ),
               ],
