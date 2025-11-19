@@ -71,7 +71,9 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: const Text("Camera Page", style: TextStyle(fontSize: 24.0))),
+        title: Center(
+          child: const Text("Camera Page", style: TextStyle(fontSize: 24.0)),
+        ),
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -79,16 +81,19 @@ class _CameraPageState extends State<CameraPage> {
         child: Center(
           child: Column(
             children: [
-              if (_imageFile != null)
-                Image.file(_imageFile!, height: 250)
-              else
+              if (_imageFile != null) ...[
+                SizedBox(height: 30),
+                Image.file(_imageFile!, height: 250),
+              ] else ...[
+                SizedBox(height: 100),
                 const Text('No image selected'),
-              const SizedBox(height: 20),
+              ],
+              const SizedBox(height: 50),
               ElevatedButton(
                 onPressed: _takePhoto,
                 child: const Text('Take Photo'),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 50),
               ElevatedButton(
                 onPressed: _pickFromGallery,
                 child: const Text('Pick from Gallery'),

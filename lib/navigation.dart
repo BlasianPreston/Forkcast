@@ -3,6 +3,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'account_page.dart';
 import 'camera_page.dart';
+import 'health_page.dart';
 
 class Navigation extends StatefulWidget {
   const Navigation({super.key});
@@ -13,7 +14,8 @@ class Navigation extends StatefulWidget {
 
 class _NavigationState extends State<Navigation> {
   int _selectedIndex = 0;
-  static final List<Widget> _widgetOptions = <Widget>[
+  final List<Widget> _widgetOptions = <Widget>[
+    HealthPage(),
     CameraPage(),
     AccountPage(),
   ];
@@ -49,6 +51,7 @@ class _NavigationState extends State<Navigation> {
               tabBackgroundColor: Colors.lightBlueAccent.withValues(alpha: 0.4),
               color: Colors.black,
               tabs: [
+                GButton(icon: LineIcons.heart, text: 'Health'),
                 GButton(icon: LineIcons.camera, text: 'Camera'),
                 GButton(icon: LineIcons.user, text: 'Account'),
               ],
