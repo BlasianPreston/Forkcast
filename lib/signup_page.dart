@@ -14,7 +14,8 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Forkcast Login", style: TextStyle(fontSize: 24.0)),
+        title: const Text("Forkcast Sign Up", style: TextStyle(fontSize: 24.0)),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -58,14 +59,33 @@ class _SignupPageState extends State<SignupPage> {
                   },
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => Navigation()),
-                    );
-                  }, // Change this when making frontend reaction
-                  child: const Text("Sign Up"),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => Navigation()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      shadowColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 32,
+                      ),
+                    ), // Change this when making frontend reaction
+                    child: const Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

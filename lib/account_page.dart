@@ -29,9 +29,8 @@ class _AccountPageState extends State<AccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text("Account Page", style: TextStyle(fontSize: 24.0)),
-        ),
+        title: Text("Account Page", style: TextStyle(fontSize: 24.0)),
+        centerTitle: true,
         automaticallyImplyLeading: false,
       ),
       body: Padding(
