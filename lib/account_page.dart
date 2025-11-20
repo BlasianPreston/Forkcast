@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:calorie_app/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -67,9 +68,21 @@ class _AccountPageState extends State<AccountPage> {
               const Text("Email"),
               SizedBox(height: 50),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => SplashPage()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromRGBO(255, 0, 0, 1),
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  shadowColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 32,
+                  ),
                 ),
                 child: const Text(
                   "Sign Out",

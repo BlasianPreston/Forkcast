@@ -1,3 +1,4 @@
+import 'package:calorie_app/meals_page.dart';
 import 'package:flutter/material.dart';
 
 class HealthPage extends StatefulWidget {
@@ -184,7 +185,7 @@ class _HealthPageState extends State<HealthPage> {
                       SizedBox(
                         width: double.infinity,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Icon(Icons.local_pizza, size: 50),
@@ -194,6 +195,25 @@ class _HealthPageState extends State<HealthPage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
+                                    Column(
+                                      children: [
+                                        const Text(
+                                          "1024",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Text(
+                                          "Calories",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(width: 20),
                                     Column(
                                       children: [
                                         const Text(
@@ -259,6 +279,34 @@ class _HealthPageState extends State<HealthPage> {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => MealsPage()),
+                        );
+                      },
+                      child: const Text(
+                        "View Meal History",
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.blue,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 15.0,
+                      color: Colors.blue,
+                    ),
+                  ],
                 ),
               ],
             ),

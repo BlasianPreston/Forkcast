@@ -1,4 +1,5 @@
 import 'package:calorie_app/navigation.dart';
+import 'package:calorie_app/signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -71,9 +72,40 @@ class _LoginPageState extends State<LoginPage> {
                         horizontal: 32,
                       ),
                     ),
-                    child: const Text("Log In",
-                    style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Log In",
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
+                ),
+                const SizedBox(height: 30),
+                Column(
+                  children: [
+                    const Text(
+                      "Don't have an account?",
+                      style: TextStyle(fontSize: 18.0),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SignupPage()),
+                        );
+                      },
+                      child: const Text(
+                        "Sign Up Here",
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.blue,
+                          color: Colors.blue,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -82,21 +82,72 @@ class _CameraPageState extends State<CameraPage> {
           child: Column(
             children: [
               if (_imageFile != null) ...[
-                SizedBox(height: 30),
+                SizedBox(height: 20),
                 Image.file(_imageFile!, height: 250),
               ] else ...[
                 SizedBox(height: 100),
                 const Text('No image selected'),
               ],
-              const SizedBox(height: 50),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _takePhoto,
                 child: const Text('Take Photo'),
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _pickFromGallery,
                 child: const Text('Pick from Gallery'),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                maxLines: 5, // makes it a multiline box
+                minLines: 1,
+                keyboardType: TextInputType.multiline,
+                decoration: InputDecoration(
+                  labelText: "Additional Comments (Optional)",
+                  alignLabelWithHint:
+                      true, // keeps label at top-left for multiline
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  hintText: "Enter any extra details here...",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    null;
+                  }, // Change this after backend is done
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    elevation: 4,
+                    shadowColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 32,
+                    ),
+                  ),
+                  child: const Text(
+                    "Submit Meal",
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
