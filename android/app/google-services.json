@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "144562886910",
+    "project_id": "forkcast-585ea",
+    "storage_bucket": "forkcast-585ea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144562886910:android:3c03e882f852e8b0f32daf",
+        "android_client_info": {
+          "package_name": "com.example.calorie_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjNFlLMIjR4PzRPhP8a7PR1KGW1eRV5rk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
