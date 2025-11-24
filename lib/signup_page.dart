@@ -1,7 +1,8 @@
 import 'package:calorie_app/login_page.dart';
-import 'package:calorie_app/navigation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -11,6 +12,19 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final nameController = TextEditingController();
+  bool logInError = false;
+  String? logInErrorText;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +46,16 @@ class _SignupPageState extends State<SignupPage> {
                     fit: BoxFit.contain,
                   ),
                 ),
+                if (logInError) ...[
+                  SizedBox(height: 20),
+                  Text(
+                    logInErrorText ?? "Unknown Error",
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ] else
+                  ...[],
                 TextFormField(
+                  controller: emailController,
                   decoration: const InputDecoration(labelText: "Email"),
                   validator: (value) {
                     if (value == null || !(value.contains("@"))) {
@@ -42,6 +65,7 @@ class _SignupPageState extends State<SignupPage> {
                   },
                 ),
                 TextFormField(
+                  controller: nameController,
                   decoration: const InputDecoration(labelText: "Name"),
                   validator: (value) {
                     if (value == null || value.length < 3) {
@@ -51,6 +75,7 @@ class _SignupPageState extends State<SignupPage> {
                   },
                 ),
                 TextFormField(
+                  controller: passwordController,
                   decoration: const InputDecoration(labelText: "Password"),
                   validator: (value) {
                     if (value == null || value.length < 8) {
@@ -63,11 +88,34 @@ class _SignupPageState extends State<SignupPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => Navigation()),
-                      );
+                    onPressed: () async {
+                      try {
+                        // 1. Create the user
+                        UserCredential userCredential = await FirebaseAuth
+                            .instance
+                            .createUserWithEmailAndPassword(
+                              email: emailController.text.trim(),
+                              password: passwordController.text.trim(),
+                            );
+
+                        // 2. Get the UID
+                        String uid = userCredential.user!.uid;
+
+                        // 3. Save the name (and any other fields) in Firestore
+                        await FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(uid)
+                            .set({
+                              "name": nameController.text.trim(),
+                              "email": emailController.text.trim(),
+                              "createdAt": Timestamp.now(),
+                            });
+
+                        // AuthGate will automatically navigate after sign up
+                      } catch (e) {
+                        logInError = true;
+                        logInErrorText = e.toString();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,

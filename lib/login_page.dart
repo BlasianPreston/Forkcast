@@ -1,7 +1,7 @@
-import 'package:calorie_app/navigation.dart';
 import 'package:calorie_app/signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +11,18 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool logInError = false;
+  String? logInErrorText;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,10 +44,17 @@ class _LoginPageState extends State<LoginPage> {
                     fit: BoxFit.contain,
                   ),
                 ),
+                if (logInError) ...[
+                  SizedBox(height: 20),
+                  Text(
+                    logInErrorText ?? "Unknown Error",
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ] else
+                  ...[],
                 TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: "Email",
-                  ), // Handle verification later
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: "Email"),
                   validator: (value) {
                     if (value == null || !(value.contains("@"))) {
                       return "Please enter your email";
@@ -44,6 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                 ),
                 TextFormField(
+                  controller: passwordController,
                   decoration: const InputDecoration(labelText: "Password"),
                   validator: (value) {
                     if (value == null || value.length < 8) {
@@ -56,12 +76,17 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => Navigation()),
-                      );
-                    }, // Change this when making frontend reaction
+                    onPressed: () async {
+                      try {
+                        await FirebaseAuth.instance.signInWithEmailAndPassword(
+                          email: emailController.text.trim(),
+                          password: passwordController.text.trim(),
+                        );
+                      } catch (e) {
+                        logInError = true;
+                        logInErrorText = e.toString();
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,

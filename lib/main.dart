@@ -1,8 +1,34 @@
+import 'package:calorie_app/navigation.dart';
 import 'package:calorie_app/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:calorie_app/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+// Class that lets the rest of the project listen to firebase changes
+class AuthGate extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        }
+
+        // USER IS LOGGED IN → go to home
+        if (snapshot.hasData) {
+          return Navigation();
+        }
+
+        // ELSE → show sign in page
+        return SplashPage();
+      },
+    );
+  }
+}
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +36,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(MaterialApp(home: AuthGate()));
 }
 
 class MyApp extends StatelessWidget {
