@@ -15,6 +15,8 @@ class _SignupPageState extends State<SignupPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
+  final heightController = TextEditingController();
+  final weightController = TextEditingController();
   bool logInError = false;
   String? logInErrorText;
 
@@ -22,6 +24,9 @@ class _SignupPageState extends State<SignupPage> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    nameController.dispose();
+    heightController.dispose();
+    weightController.dispose();
     super.dispose();
   }
 
@@ -84,6 +89,18 @@ class _SignupPageState extends State<SignupPage> {
                     return null;
                   },
                 ),
+                TextFormField(
+                  controller: heightController,
+                  decoration: const InputDecoration(
+                    labelText: "Height (in inches)",
+                  ),
+                ),
+                TextFormField(
+                  controller: weightController,
+                  decoration: const InputDecoration(
+                    labelText: "Weight (in pounds)",
+                  ),
+                ),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -108,6 +125,8 @@ class _SignupPageState extends State<SignupPage> {
                             .set({
                               "name": nameController.text.trim(),
                               "email": emailController.text.trim(),
+                              "height": heightController.text.trim(),
+                              "weight": weightController.text.trim(),
                               "createdAt": Timestamp.now(),
                             });
 

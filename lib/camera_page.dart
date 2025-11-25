@@ -1,39 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera_macos/camera_macos.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-
-class PhotoPicker {
-  final ImagePicker _picker = ImagePicker();
-  late CameraMacOSController? _macController;
-
-  Future<String?> pickImage({required bool fromCamera}) async {
-    if (Platform.isMacOS) {
-      if (fromCamera) {
-        // Use macOS camera
-        CameraMacOSFile? file = await _macController?.takePicture();
-        if (file != null) {
-          return file.url;
-        }
-      } else {
-        // Use gallery picker on macOS
-        final XFile? file = await _picker.pickImage(
-          source: ImageSource.gallery,
-        );
-        return file?.path;
-      }
-    } else {
-      // iOS / Android
-      final source = fromCamera ? ImageSource.camera : ImageSource.gallery;
-      final XFile? file = await _picker.pickImage(source: source);
-      return file?.path;
-    }
-    return null;
-  }
-}
 
 class CameraPage extends StatefulWidget {
   const CameraPage({super.key});
@@ -43,7 +16,6 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage> {
-  final ImagePicker _picker = ImagePicker();
   File? _imageFile;
   final foodNameController = TextEditingController();
   final commentsController = TextEditingController();
@@ -51,28 +23,53 @@ class _CameraPageState extends State<CameraPage> {
   bool isError = false;
   String? isErrorText;
 
-  Future<void> _takePhoto() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.camera,
-    );
+  final ImagePicker _picker = ImagePicker();
+  late CameraMacOSController? _macController;
 
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+  Future<String?> pickImage({required bool fromCamera}) async {
+    if (Platform.isMacOS) {
+      if (fromCamera) {
+        // Use macOS camera
+        CameraMacOSFile? file = await _macController?.takePicture();
+        if (file != null) {
+          setState(() {
+            _imageFile = File(file.url!);
+          });
+        }
+      } else {
+        // Use gallery picker on macOS
+        final XFile? file = await _picker.pickImage(
+          source: ImageSource.gallery,
+        );
+        if (file != null) {
+          setState(() {
+            _imageFile = File(file.path);
+          });
+        }
+      }
+    } else {
+      // iOS / Android
+      final source = fromCamera ? ImageSource.camera : ImageSource.gallery;
+      final XFile? file = await _picker.pickImage(source: source);
+      if (file != null) {
+        setState(() {
+          _imageFile = File(file.path);
+        });
+      }
     }
+    return null;
   }
 
-  Future<void> _pickFromGallery() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
+  void _clearScreen() {
+    foodNameController.clear();
+    commentsController.clear();
 
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-    }
+    setState(() {
+      _imageFile = null;
+      nutritionData = null;
+      isError = false;
+      isErrorText = null;
+    });
   }
 
   Future<String?> askGeminiAboutImage(File imageFile) async {
@@ -88,6 +85,7 @@ class _CameraPageState extends State<CameraPage> {
 
     String promptText = """
       Analyze this food image. Return a JSON object with exactly these keys:
+      - "meal_name" (string)
       - "calorie_estimate" (integer)
       - "protein_estimate" (integer)
       - "carb_estimate" (integer)
@@ -113,8 +111,7 @@ class _CameraPageState extends State<CameraPage> {
 
       if (responseText == null) return null;
 
-      // CLEANUP: Sometimes the AI still adds markdown backticks (```json ... ```)
-      // This removes them just in case.
+      // Handles AI adding backticks to response
       responseText = responseText
           .replaceAll('```json', '')
           .replaceAll('```', '')
@@ -128,10 +125,35 @@ class _CameraPageState extends State<CameraPage> {
         isErrorText = e.toString();
       });
     }
-    ;
-    setState(() {
-      _imageFile = null;
-    });
+
+    late User? user = FirebaseAuth.instance.currentUser;
+    late String? uid = user?.uid;
+
+    Map<String, dynamic> mealData = {
+      'name': foodNameController.text.trim(),
+      'comments': commentsController.text.trim(),
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      ...?nutritionData,
+    };
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('meals')
+          .doc(uid)
+          .collection('meals')
+          .add(mealData);
+
+      // Optional: Show success message or pop page
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Meal Saved!")));
+      }
+      _clearScreen();
+    } catch (e) {
+      isError = true;
+      isErrorText = e.toString();
+    }
     return null;
   }
 
@@ -165,12 +187,16 @@ class _CameraPageState extends State<CameraPage> {
               ],
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _takePhoto,
+                onPressed: () {
+                  pickImage(fromCamera: true);
+                },
                 child: const Text('Take Photo'),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _pickFromGallery,
+                onPressed: () {
+                  pickImage(fromCamera: false);
+                },
                 child: const Text('Pick from Gallery'),
               ),
               const SizedBox(height: 20),
