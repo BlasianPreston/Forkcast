@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera_macos/camera_macos.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 class PhotoPicker {
   final ImagePicker _picker = ImagePicker();
@@ -42,6 +45,11 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> {
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
+  final foodNameController = TextEditingController();
+  final commentsController = TextEditingController();
+  Map<String, dynamic>? nutritionData;
+  bool isError = false;
+  String? isErrorText;
 
   Future<void> _takePhoto() async {
     final XFile? pickedFile = await _picker.pickImage(
@@ -65,6 +73,73 @@ class _CameraPageState extends State<CameraPage> {
         _imageFile = File(pickedFile.path);
       });
     }
+  }
+
+  Future<String?> askGeminiAboutImage(File imageFile) async {
+    final model = GenerativeModel(
+      model: 'gemini-2.5-flash',
+      apiKey: dotenv.get('GEMINI_API_KEY'),
+      generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+    );
+
+    // 2. Prepare the image data
+    // We read the file as bytes because Gemini needs raw data
+    final imageBytes = await imageFile.readAsBytes();
+
+    String promptText = """
+      Analyze this food image. Return a JSON object with exactly these keys:
+      - "calorie_estimate" (integer)
+      - "protein_estimate" (integer)
+      - "carb_estimate" (integer)
+      - "fat_estimate" (integer)
+
+      Do not wrap the response in markdown code blocks. Return raw JSON only.
+      """;
+
+    // 3. Define the content
+    final content = [
+      Content.multi([
+        TextPart(promptText),
+        DataPart('image/jpeg', imageBytes),
+        TextPart(foodNameController.text.trim()),
+        TextPart(commentsController.text.trim()),
+      ]),
+    ];
+
+    try {
+      // 4. Send the request
+      final response = await model.generateContent(content);
+      String? responseText = response.text;
+
+      if (responseText == null) return null;
+
+      // CLEANUP: Sometimes the AI still adds markdown backticks (```json ... ```)
+      // This removes them just in case.
+      responseText = responseText
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
+      setState(() {
+        nutritionData = jsonDecode(responseText!);
+      });
+    } catch (e) {
+      setState(() {
+        isError = true;
+        isErrorText = e.toString();
+      });
+    }
+    ;
+    setState(() {
+      _imageFile = null;
+    });
+    return null;
+  }
+
+  @override
+  void dispose() {
+    foodNameController.dispose();
+    commentsController.dispose();
+    super.dispose();
   }
 
   @override
@@ -100,6 +175,31 @@ class _CameraPageState extends State<CameraPage> {
               ),
               const SizedBox(height: 20),
               TextFormField(
+                maxLines: 1,
+                minLines: 1,
+                keyboardType: TextInputType.multiline,
+                decoration: InputDecoration(
+                  labelText: "Name of Meal",
+                  alignLabelWithHint:
+                      true, // keeps label at top-left for multiline
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  hintText: "Enter the name of your meal",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
                 maxLines: 5, // makes it a multiline box
                 minLines: 1,
                 keyboardType: TextInputType.multiline,
@@ -128,7 +228,11 @@ class _CameraPageState extends State<CameraPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    null;
+                    _imageFile != null
+                        ? () async {
+                            await askGeminiAboutImage(_imageFile!);
+                          }
+                        : null;
                   }, // Change this after backend is done
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,

@@ -113,8 +113,10 @@ class _SignupPageState extends State<SignupPage> {
 
                         // AuthGate will automatically navigate after sign up
                       } catch (e) {
-                        logInError = true;
-                        logInErrorText = e.toString();
+                        setState(() {
+                          logInError = true;
+                          logInErrorText = e.toString();
+                        });
                       }
                     },
                     style: ElevatedButton.styleFrom(

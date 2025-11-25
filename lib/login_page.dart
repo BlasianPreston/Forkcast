@@ -83,8 +83,10 @@ class _LoginPageState extends State<LoginPage> {
                           password: passwordController.text.trim(),
                         );
                       } catch (e) {
-                        logInError = true;
-                        logInErrorText = e.toString();
+                        setState(() {
+                          logInError = true;
+                          logInErrorText = e.toString();
+                        });
                       }
                     },
                     style: ElevatedButton.styleFrom(
