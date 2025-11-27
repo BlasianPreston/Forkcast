@@ -22,7 +22,7 @@ class AuthGate extends StatelessWidget {
           return Navigation();
         }
 
-        // ELSE → show sign in page
+        // ELSE → show home in page
         return SplashPage();
       },
     );

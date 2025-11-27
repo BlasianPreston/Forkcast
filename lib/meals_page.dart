@@ -1,3 +1,6 @@
+import 'package:calorie_app/meal_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MealsPage extends StatefulWidget {
@@ -8,116 +11,55 @@ class MealsPage extends StatefulWidget {
 }
 
 class _MealsPageState extends State<MealsPage> {
+  late User? user = FirebaseAuth.instance.currentUser;
+  late String? uid = user?.uid;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Meal History", style: TextStyle(fontSize: 24.0)),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(24.0),
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox( // Possibly extract this to its own component and map when I have all the meals
-                width: double.infinity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.local_pizza, size: 50),
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              children: [
-                                const Text(
-                                  "1024",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Text(
-                                  "Calories",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 20),
-                            Column(
-                              children: [
-                                const Text(
-                                  "60",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Text(
-                                  "Protein",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 20),
-                            Column(
-                              children: [
-                                const Text(
-                                  "47",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Text(
-                                  "Carbs",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 20),
-                            Column(
-                              children: [
-                                const Text(
-                                  "18",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Text(
-                                  "Fats",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return FutureBuilder(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('meals')
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        var meals = snapshot.data!.docs;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text("Meal History", style: TextStyle(fontSize: 24.0)),
+            centerTitle: true,
           ),
-        ),
-      ),
+          body: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Center(
+              child: Column(
+                children: [
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) ...[
+                    const Text("No meals logged today"),
+                  ] else ...[
+                    ...meals.map((document) {
+                      // 2. Extract the data for THIS specific meal
+                      Map<String, dynamic> data = document.data();
+
+                      // 3. Return the widget
+                      return MealCard(
+                        label: data['food_name'] ?? 'Unknown Meal',
+                        calories: data['calorie_estimate'] ?? 0,
+                        imageUrl: data['image_url'],
+                        protein: data['protein'],
+                        carbs: data['carbs'],
+                        fats: data['fats'],
+                      );
+                    }),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

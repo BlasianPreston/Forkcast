@@ -14,6 +14,17 @@ class HealthPage extends StatefulWidget {
 class _HealthPageState extends State<HealthPage> {
   late User? user = FirebaseAuth.instance.currentUser;
   late String? uid = user?.uid;
+  late DateTime now = DateTime.now();
+  late int startOfDay = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).millisecondsSinceEpoch;
+  late int endOfDay = DateTime(
+    now.year,
+    now.month,
+    now.day + 1,
+  ).millisecondsSinceEpoch;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -21,12 +32,14 @@ class _HealthPageState extends State<HealthPage> {
           .collection('users')
           .doc(uid)
           .collection('meals')
-          .orderBy('timestamp', descending: true)
+          .where('timestamp', isGreaterThanOrEqualTo: startOfDay)
+          .where('timestamp', isLessThan: endOfDay)
           .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        var meals = snapshot.data!.docs;
         return Scaffold(
           appBar: AppBar(
             title: const Center(
@@ -202,13 +215,25 @@ class _HealthPageState extends State<HealthPage> {
                             ),
                           ), // Map over this later when pulling data from database
                           SizedBox(height: 30),
-                          MealCard(
-                            label: 'Pizza',
-                            calories: 1024,
-                            protein: 60,
-                            carbs: 53,
-                            fats: 24,
-                          ),
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) ...[
+                            const Text("No meals logged today"),
+                          ] else ...[
+                            ...meals.map((document) {
+                              // 2. Extract the data for THIS specific meal
+                              Map<String, dynamic> data = document.data();
+
+                              // 3. Return the widget
+                              return MealCard(
+                                label: data['food_name'] ?? 'Unknown Meal',
+                                calories: data['calorie_estimate'] ?? 0,
+                                imageUrl: data['image_url'],
+                                protein: data['protein'],
+                                carbs: data['carbs'],
+                                fats: data['fats'],
+                              );
+                            }),
+                          ],
                         ],
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class MealCard extends StatelessWidget {
   final String label;
+  final String imageUrl;
   final int calories;
   final int protein;
   final int carbs;
@@ -11,6 +12,7 @@ class MealCard extends StatelessWidget {
   const MealCard({
     super.key,
     required this.label,
+    required this.imageUrl,
     required this.calories,
     required this.protein,
     required this.carbs,
@@ -25,7 +27,12 @@ class MealCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Icons.local_pizza, size: 50),
+          Image.network(
+            imageUrl,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
           Column(
             children: [
               Row(

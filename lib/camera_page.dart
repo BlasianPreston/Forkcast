@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
@@ -129,21 +130,35 @@ class _CameraPageState extends State<CameraPage> {
     late User? user = FirebaseAuth.instance.currentUser;
     late String? uid = user?.uid;
 
-    Map<String, dynamic> mealData = {
-      'name': foodNameController.text.trim(),
-      'comments': commentsController.text.trim(),
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-      ...?nutritionData,
-    };
-
     try {
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      Reference storageRef = FirebaseStorage.instance
+          .ref()
+          .child('users')
+          .child(uid!)
+          .child('meal_images')
+          .child("$fileName.jpg");
+
+      await storageRef.putFile(imageFile);
+
+      // Get the public link (URL)
+      String downloadUrl = await storageRef.getDownloadURL();
+
+      Map<String, dynamic> mealData = {
+        'name': foodNameController.text.trim(),
+        'comments': commentsController.text.trim(),
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'image_url': downloadUrl,
+        ...?nutritionData,
+      };
+
       await FirebaseFirestore.instance
           .collection('meals')
           .doc(uid)
           .collection('meals')
           .add(mealData);
 
-      // Optional: Show success message or pop page
+      // Show success message or pop page
       if (mounted) {
         ScaffoldMessenger.of(
           context,
