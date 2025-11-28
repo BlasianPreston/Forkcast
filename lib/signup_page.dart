@@ -1,4 +1,5 @@
 import 'package:calorie_app/login_page.dart';
+import 'package:calorie_app/macro_result.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,11 +13,14 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
   final heightController = TextEditingController();
   final weightController = TextEditingController();
+  final ageController = TextEditingController();
+  String? sex = "Male";
   bool logInError = false;
   String? logInErrorText;
 
@@ -27,6 +31,7 @@ class _SignupPageState extends State<SignupPage> {
     nameController.dispose();
     heightController.dispose();
     weightController.dispose();
+    ageController.dispose();
     super.dispose();
   }
 
@@ -59,102 +64,174 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ] else
                   ...[],
-                TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: "Email"),
-                  validator: (value) {
-                    if (value == null || !(value.contains("@"))) {
-                      return "Please enter your email";
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: "Name"),
-                  validator: (value) {
-                    if (value == null || value.length < 3) {
-                      return "Please enter your name";
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: "Password"),
-                  validator: (value) {
-                    if (value == null || value.length < 8) {
-                      return "Please enter an 8 character long password at minimum";
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: heightController,
-                  decoration: const InputDecoration(
-                    labelText: "Height (in inches)",
-                  ),
-                ),
-                TextFormField(
-                  controller: weightController,
-                  decoration: const InputDecoration(
-                    labelText: "Weight (in pounds)",
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        // 1. Create the user
-                        UserCredential userCredential = await FirebaseAuth
-                            .instance
-                            .createUserWithEmailAndPassword(
-                              email: emailController.text.trim(),
-                              password: passwordController.text.trim(),
-                            );
-
-                        // 2. Get the UID
-                        String uid = userCredential.user!.uid;
-
-                        // 3. Save the name (and any other fields) in Firestore
-                        await FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(uid)
-                            .set({
-                              "name": nameController.text.trim(),
-                              "email": emailController.text.trim(),
-                              "height": heightController.text.trim(),
-                              "weight": weightController.text.trim(),
-                              "createdAt": Timestamp.now(),
-                            });
-
-                        // AuthGate will automatically navigate after sign up
-                      } catch (e) {
-                        setState(() {
-                          logInError = true;
-                          logInErrorText = e.toString();
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      elevation: 4,
-                      shadowColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 32,
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: emailController,
+                        decoration: const InputDecoration(labelText: "Email"),
+                        validator: (value) {
+                          if (value == null || !(value.contains("@"))) {
+                            return "Please enter your email";
+                          }
+                          return null;
+                        },
                       ),
-                    ), // Change this when making frontend reaction
-                    child: const Text(
-                      "Sign Up",
-                      style: TextStyle(
-                        fontSize: 24.0,
-                        fontWeight: FontWeight.bold,
+                      TextFormField(
+                        controller: nameController,
+                        decoration: const InputDecoration(labelText: "Name"),
+                        validator: (value) {
+                          if (value == null || value.length < 3) {
+                            return "Please enter your name";
+                          }
+                          return null;
+                        },
                       ),
-                    ),
+                      TextFormField(
+                        controller: passwordController,
+                        decoration: const InputDecoration(
+                          labelText: "Password",
+                        ),
+                        validator: (value) {
+                          if (value == null || value.length < 8) {
+                            return "Please enter an 8 character long password at minimum";
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: heightController,
+                        decoration: const InputDecoration(
+                          labelText: "Height (in inches)",
+                        ),
+                        validator: (value) {
+                          if (value == null || (value as int) < 100) {
+                            return "Please enter a valid height";
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: weightController,
+                        decoration: const InputDecoration(
+                          labelText: "Weight (in pounds)",
+                        ),
+                        validator: (value) {
+                          if (value == null || (value as int) < 10) {
+                            return "Please enter a valid weight";
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        controller: ageController,
+                        decoration: const InputDecoration(
+                          labelText: "Age (in years)",
+                        ),
+                        validator: (value) {
+                          if (value == null) {
+                            return "Please enter your age";
+                          }
+                          return null;
+                        },
+                      ),
+                      RadioGroup<String>(
+                        groupValue: sex,
+                        onChanged: (String? gender) {
+                          sex = gender;
+                        },
+                        child: Column(
+                          children: [
+                            Radio<String>(value: "Male"),
+                            Radio<String>(value: "Female"),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (!_formKey.currentState!.validate()) {
+                              return;
+                            }
+
+                            if (sex == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please select a gender"),
+                                ),
+                              );
+                              return;
+                            }
+                            try {
+                              // 1. Create the user
+                              UserCredential userCredential = await FirebaseAuth
+                                  .instance
+                                  .createUserWithEmailAndPassword(
+                                    email: emailController.text.trim(),
+                                    password: passwordController.text.trim(),
+                                  );
+
+                              // 2. Get the UID
+                              String uid = userCredential.user!.uid;
+
+                              MacroResult mr = calculateMacros(
+                                weightLbs:
+                                    (weightController.text.trim() as double),
+                                heightIn:
+                                    heightController.text.trim() as double,
+                                age: ageController.text.trim() as int,
+                                sex: sex!,
+                              );
+
+                              // 3. Save the name (and any other fields) in Firestore
+                              await FirebaseFirestore.instance
+                                  .collection("users")
+                                  .doc(uid)
+                                  .set({
+                                    "name": nameController.text.trim(),
+                                    "email": emailController.text.trim(),
+                                    "height": heightController.text.trim(),
+                                    "weight": weightController.text.trim(),
+                                    "age": ageController.text.trim(),
+                                    "sex": sex,
+                                    "daily_cals": mr.calories,
+                                    "daily_protein": mr.protein,
+                                    "daily_fats": mr.fat,
+                                    "daily_carbs": mr.carbs,
+                                    "createdAt": Timestamp.now(),
+                                  });
+
+                              // AuthGate will automatically navigate after sign up
+                            } catch (e) {
+                              setState(() {
+                                logInError = true;
+                                logInErrorText = e.toString();
+                              });
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            elevation: 4,
+                            shadowColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 32,
+                            ),
+                          ), // Change this when making frontend reaction
+                          child: const Text(
+                            "Sign Up",
+                            style: TextStyle(
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 30),
