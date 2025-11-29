@@ -11,6 +11,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool logInError = false;
@@ -34,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(32.0),
         child: Center(
           child: Form(
+            key: _formKey,
             child: Column(
               children: [
                 SizedBox(
@@ -77,6 +79,15 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
+                      if (!_formKey.currentState!.validate()) {
+                        return;
+                      }
+                      
+                      setState(() {
+                        logInError = false;
+                        logInErrorText = null;
+                      });
+                      
                       try {
                         await FirebaseAuth.instance.signInWithEmailAndPassword(
                           email: emailController.text.trim(),

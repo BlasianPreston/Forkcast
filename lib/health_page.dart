@@ -28,18 +28,45 @@ class _HealthPageState extends State<HealthPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('meals')
-          .where('timestamp', isGreaterThanOrEqualTo: startOfDay)
-          .where('timestamp', isLessThan: endOfDay)
-          .get(),
+      future: Future.wait([
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('meals')
+            .where('timestamp', isGreaterThanOrEqualTo: startOfDay)
+            .where('timestamp', isLessThan: endOfDay)
+            .get(),
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get(),
+      ]),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        var meals = snapshot.data!.docs;
+        if (!snapshot.hasData) {
+          return const Center(child: Text("Error loading data"));
+        }
+        
+        var mealsSnapshot = snapshot.data![0] as QuerySnapshot;
+        var userSnapshot = snapshot.data![1] as DocumentSnapshot;
+        var meals = mealsSnapshot.docs;
+        
+        int totalCalories = 0;
+        for (var meal in meals) {
+          var data = meal.data() as Map<String, dynamic>;
+          totalCalories += (data['calorie_estimate'] as num?)?.toInt() ?? 0;
+        }
+        
+        var userData = userSnapshot.data() as Map<String, dynamic>?;
+        int dailyCals = (userData?['daily_cals'] as num?)?.toInt() ?? 2000;
+        
+        double caloriesRatio = dailyCals > 0 
+            ? (totalCalories / dailyCals).clamp(0.0, 1.0) 
+            : 0.0;
+        
+        int mealsCount = meals.length;
         return Scaffold(
           appBar: AppBar(
             title: const Center(
@@ -62,7 +89,7 @@ class _HealthPageState extends State<HealthPage> {
                           width: 120,
                           height: 120,
                           child: CircularProgressIndicator(
-                            value: 2300 / 3000, // between 0 and 1
+                            value: caloriesRatio,
                             strokeWidth: 10,
                             backgroundColor: Colors.grey[300],
                             valueColor: AlwaysStoppedAnimation(Colors.blue),
@@ -83,7 +110,7 @@ class _HealthPageState extends State<HealthPage> {
                                       ),
                                     ),
                                     Text(
-                                      "2300",
+                                      "$totalCalories",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -105,7 +132,7 @@ class _HealthPageState extends State<HealthPage> {
                                       ),
                                     ),
                                     Text(
-                                      "2",
+                                      "$mealsCount",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -215,22 +242,20 @@ class _HealthPageState extends State<HealthPage> {
                             ),
                           ), // Map over this later when pulling data from database
                           SizedBox(height: 30),
-                          if (!snapshot.hasData ||
-                              snapshot.data!.docs.isEmpty) ...[
+                          if (meals.isEmpty) ...[
                             const Text("No meals logged today"),
                           ] else ...[
                             ...meals.map((document) {
-                              // 2. Extract the data for THIS specific meal
-                              Map<String, dynamic> data = document.data();
+                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
-                              // 3. Return the widget
+                              String imageUrl = data['image_url']?.toString() ?? '';
                               return MealCard(
-                                label: data['food_name'] ?? 'Unknown Meal',
-                                calories: data['calorie_estimate'] ?? 0,
-                                imageUrl: data['image_url'],
-                                protein: data['protein'],
-                                carbs: data['carbs'],
-                                fats: data['fats'],
+                                label: data['food_name']?.toString() ?? 'Unknown Meal',
+                                calories: (data['calorie_estimate'] as num?)?.toInt() ?? 0,
+                                imageUrl: imageUrl,
+                                protein: (data['protein'] as num?)?.toInt() ?? 0,
+                                carbs: (data['carbs'] as num?)?.toInt() ?? 0,
+                                fats: (data['fats'] as num?)?.toInt() ?? 0,
                               );
                             }),
                           ],

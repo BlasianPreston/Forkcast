@@ -2,6 +2,7 @@ import 'package:calorie_app/login_page.dart';
 import 'package:calorie_app/macro_result.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -43,13 +44,13 @@ class _SignupPageState extends State<SignupPage> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Form(
             child: Column(
               children: [
                 SizedBox(
-                  height: 200,
+                  height: 175,
                   width: double.infinity,
                   child: SvgPicture.asset(
                     'assets/transparent-logo.svg',
@@ -102,11 +103,19 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       TextFormField(
                         controller: heightController,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
+                        ],
                         decoration: const InputDecoration(
                           labelText: "Height (in inches)",
                         ),
                         validator: (value) {
-                          if (value == null || (value as int) < 100) {
+                          if (value == null) {
                             return "Please enter a valid height";
                           }
                           return null;
@@ -114,11 +123,19 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       TextFormField(
                         controller: weightController,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
+                        ],
                         decoration: const InputDecoration(
                           labelText: "Weight (in pounds)",
                         ),
                         validator: (value) {
-                          if (value == null || (value as int) < 10) {
+                          if (value == null) {
                             return "Please enter a valid weight";
                           }
                           return null;
@@ -126,6 +143,10 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       TextFormField(
                         controller: ageController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         decoration: const InputDecoration(
                           labelText: "Age (in years)",
                         ),
@@ -136,16 +157,25 @@ class _SignupPageState extends State<SignupPage> {
                           return null;
                         },
                       ),
-                      RadioGroup<String>(
-                        groupValue: sex,
-                        onChanged: (String? gender) {
-                          sex = gender;
-                        },
-                        child: Column(
-                          children: [
-                            Radio<String>(value: "Male"),
-                            Radio<String>(value: "Female"),
-                          ],
+                      Center(
+                        child: RadioGroup<String>(
+                          groupValue: sex,
+                          onChanged: (String? gender) {
+                            setState(() {
+                              sex = gender;
+                            });
+                          },
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Radio<String>(value: "Male"),
+                              const Text("Male"),
+                              SizedBox(width: 20),
+                              Radio<String>(value: "Female"),
+                              const Text("Female"),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -179,10 +209,18 @@ class _SignupPageState extends State<SignupPage> {
 
                               MacroResult mr = calculateMacros(
                                 weightLbs:
-                                    (weightController.text.trim() as double),
+                                    double.tryParse(
+                                      weightController.text.trim(),
+                                    ) ??
+                                    0.0,
                                 heightIn:
-                                    heightController.text.trim() as double,
-                                age: ageController.text.trim() as int,
+                                    double.tryParse(
+                                      heightController.text.trim(),
+                                    ) ??
+                                    0.0,
+                                age:
+                                    int.tryParse(ageController.text.trim()) ??
+                                    0,
                                 sex: sex!,
                               );
 
@@ -204,7 +242,10 @@ class _SignupPageState extends State<SignupPage> {
                                     "createdAt": Timestamp.now(),
                                   });
 
-                              // AuthGate will automatically navigate after sign up
+                              // Pop the signup page so AuthGate can show Navigation()
+                              if (mounted) {
+                                Navigator.of(context).popUntil((route) => route.isFirst);
+                              }
                             } catch (e) {
                               setState(() {
                                 logInError = true;
@@ -234,7 +275,7 @@ class _SignupPageState extends State<SignupPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
                 Column(
                   children: [
                     const Text(

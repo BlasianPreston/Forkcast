@@ -36,7 +36,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MaterialApp(home: AuthGate()));
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: AuthGate(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

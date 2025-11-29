@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:calorie_app/editable_text_field.dart';
 import 'package:calorie_app/splash_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -58,8 +59,21 @@ class _AccountPageState extends State<AccountPage> {
     return FutureBuilder(
       future: FirebaseFirestore.instance.collection("users").doc(uid).get(),
       builder: (context, snapshot) {
-        var data = snapshot.data!;
-        _imageFile = File(data['profilePicture']);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Center(child: Text("Error loading user data"));
+        }
+        
+        var dataMap = snapshot.data!.data();
+        if (dataMap == null) {
+          return const Center(child: Text("No user data found"));
+        }
+        
+        // profilePicture is a URL string, not a file path, so we store it separately
+        String? profilePictureUrl = dataMap['profilePicture'] as String?;
+        
         return Scaffold(
           appBar: AppBar(
             title: Text("Account Page", style: TextStyle(fontSize: 24.0)),
@@ -79,25 +93,45 @@ class _AccountPageState extends State<AccountPage> {
                       minimumSize: Size(0, 0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: _imageFile == null
-                        ? Icon(
-                            Icons.account_circle,
-                            color: Colors.black,
-                            size: 100.0,
-                          )
-                        : ClipOval(
+                    child: _imageFile != null
+                        ? ClipOval(
                             child: Image.file(
                               _imageFile!,
                               width: 100,
                               height: 100,
                               fit: BoxFit.cover,
                             ),
-                          ),
+                          )
+                        : profilePictureUrl != null
+                            ? ClipOval(
+                                child: Image.network(
+                                  profilePictureUrl,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.account_circle,
+                                      color: Colors.black,
+                                      size: 100.0,
+                                    );
+                                  },
+                                ),
+                              )
+                            : Icon(
+                                Icons.account_circle,
+                                color: Colors.black,
+                                size: 100.0,
+                              ),
                   ),
                   SizedBox(height: 50),
-                  Text(data['name']),
+                  Text(dataMap['name'] ?? ''),
                   SizedBox(height: 50),
-                  Text(data['email']),
+                  Text(dataMap['email'] ?? ''),
+                  SizedBox(height: 50),
+                  EditableTextField(initialValue: dataMap['height']?.toString() ?? '', label: 'Height', profileField: 'height', unit: 'in'),
+                  SizedBox(height: 50),
+                  EditableTextField(initialValue: dataMap['weight']?.toString() ?? '', label: 'Weight', profileField: 'weight', unit: 'lbs'),
                   SizedBox(height: 50),
                   ElevatedButton(
                     onPressed: () {
