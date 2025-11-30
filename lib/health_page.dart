@@ -53,20 +53,38 @@ class _HealthPageState extends State<HealthPage> {
         var userSnapshot = snapshot.data![1] as DocumentSnapshot;
         var meals = mealsSnapshot.docs;
         
+        // Calculate totals from today's meals
         int totalCalories = 0;
+        int totalProtein = 0;
+        int totalCarbs = 0;
+        int totalFats = 0;
+        
         for (var meal in meals) {
           var data = meal.data() as Map<String, dynamic>;
           totalCalories += (data['calorie_estimate'] as num?)?.toInt() ?? 0;
+          totalProtein += (data['protein'] as num?)?.toInt() ?? 0;
+          totalCarbs += (data['carbs'] as num?)?.toInt() ?? 0;
+          totalFats += (data['fats'] as num?)?.toInt() ?? 0;
         }
         
         var userData = userSnapshot.data() as Map<String, dynamic>?;
         int dailyCals = (userData?['daily_cals'] as num?)?.toInt() ?? 2000;
+        double dailyProtein = (userData?['daily_protein'] as num?)?.toDouble() ?? 0.0;
+        double dailyCarbs = (userData?['daily_carbs'] as num?)?.toDouble() ?? 0.0;
+        double dailyFats = (userData?['daily_fats'] as num?)?.toDouble() ?? 0.0;
         
         double caloriesRatio = dailyCals > 0 
             ? (totalCalories / dailyCals).clamp(0.0, 1.0) 
             : 0.0;
-        
-        int mealsCount = meals.length;
+        double proteinRatio = dailyProtein > 0 
+            ? (totalProtein / dailyProtein).clamp(0.0, 1.0) 
+            : 0.0;
+        double carbsRatio = dailyCarbs > 0 
+            ? (totalCarbs / dailyCarbs).clamp(0.0, 1.0) 
+            : 0.0;
+        double fatsRatio = dailyFats > 0 
+            ? (totalFats / dailyFats).clamp(0.0, 1.0) 
+            : 0.0;
         return Scaffold(
           appBar: AppBar(
             title: const Center(
@@ -98,48 +116,18 @@ class _HealthPageState extends State<HealthPage> {
                         SizedBox(width: 50),
                         Column(
                           children: [
-                            SizedBox(
-                              child: Center(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Calories Eaten Today:",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "$totalCalories",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            Text(
+                              "Calories Eaten Today:",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(
-                              child: Center(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "Meals Eaten Today:",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "$mealsCount",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            Text(
+                              "$totalCalories / $dailyCals",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -160,7 +148,7 @@ class _HealthPageState extends State<HealthPage> {
                         Column(
                           children: [
                             Text(
-                              "Protein: 167 / 200",
+                              "Protein: $totalProtein / ${dailyProtein.toInt()}g",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -171,7 +159,7 @@ class _HealthPageState extends State<HealthPage> {
                               width: double.infinity,
                               height: 15,
                               child: LinearProgressIndicator(
-                                value: 167 / 200, // between 0 and 1
+                                value: proteinRatio,
                                 backgroundColor: Colors.grey[300],
                                 valueColor: AlwaysStoppedAnimation(Colors.red),
                               ),
@@ -182,7 +170,7 @@ class _HealthPageState extends State<HealthPage> {
                         Column(
                           children: [
                             Text(
-                              "Carbs: 124 / 150",
+                              "Carbs: $totalCarbs / ${dailyCarbs.toInt()}g",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -193,7 +181,7 @@ class _HealthPageState extends State<HealthPage> {
                               width: double.infinity,
                               height: 15,
                               child: LinearProgressIndicator(
-                                value: 124 / 150, // between 0 and 1
+                                value: carbsRatio,
                                 backgroundColor: Colors.grey[300],
                                 valueColor: AlwaysStoppedAnimation(
                                   Colors.yellow,
@@ -206,7 +194,7 @@ class _HealthPageState extends State<HealthPage> {
                         Column(
                           children: [
                             Text(
-                              "Fat: 60 / 65",
+                              "Fat: $totalFats / ${dailyFats.toInt()}g",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -217,7 +205,7 @@ class _HealthPageState extends State<HealthPage> {
                               width: double.infinity,
                               height: 15,
                               child: LinearProgressIndicator(
-                                value: 60 / 65, // between 0 and 1
+                                value: fatsRatio,
                                 backgroundColor: Colors.grey[300],
                                 valueColor: AlwaysStoppedAnimation(
                                   Colors.green,
@@ -228,7 +216,7 @@ class _HealthPageState extends State<HealthPage> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -240,8 +228,8 @@ class _HealthPageState extends State<HealthPage> {
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
-                          ), // Map over this later when pulling data from database
-                          SizedBox(height: 30),
+                          ),
+                          SizedBox(height: 20),
                           if (meals.isEmpty) ...[
                             const Text("No meals logged today"),
                           ] else ...[

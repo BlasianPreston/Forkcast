@@ -37,7 +37,7 @@ class _MealsPageState extends State<MealsPage> {
               child: Column(
                 children: [
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) ...[
-                    const Text("No meals logged today"),
+                    const Text("No meals in your history"),
                   ] else ...[
                     ...meals.map((document) {
                       // 2. Extract the data for THIS specific meal

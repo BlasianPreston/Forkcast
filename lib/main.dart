@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // Class that lets the rest of the project listen to firebase changes
 class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(

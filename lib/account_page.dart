@@ -1,6 +1,5 @@
 import 'dart:io';
-import 'package:calorie_app/editable_text_field.dart';
-import 'package:calorie_app/splash_page.dart';
+import 'package:calorie_app/macro_updating_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -15,14 +14,13 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  late User? user = FirebaseAuth.instance.currentUser;
-  late String? uid = user?.uid;
   bool imageError = false;
   String? imageErrorText;
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
+  bool _isSigningOut = false;
 
-  Future<void> _pickFromGallery() async {
+  Future<void> _pickFromGallery(String uid) async {
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
     );
@@ -55,7 +53,34 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Check if uid is null and sign out if needed
+    User? user = FirebaseAuth.instance.currentUser;
+    String? uid = user?.uid;
+    if (uid == null) {
+      _isSigningOut = true;
+      FirebaseAuth.instance.signOut();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Get current user and uid
+    User? user = FirebaseAuth.instance.currentUser;
+    String? uid = user?.uid;
+
+    // If uid is null, sign out and show loading (AuthGate will handle redirect)
+    if (uid == null || _isSigningOut) {
+      if (!_isSigningOut) {
+        _isSigningOut = true;
+        FirebaseAuth.instance.signOut();
+      }
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return FutureBuilder(
       future: FirebaseFirestore.instance.collection("users").doc(uid).get(),
       builder: (context, snapshot) {
@@ -87,7 +112,7 @@ class _AccountPageState extends State<AccountPage> {
                 children: [
                   SizedBox(height: 100),
                   ElevatedButton(
-                    onPressed: _pickFromGallery,
+                    onPressed: () => _pickFromGallery(uid),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size(0, 0),
@@ -129,16 +154,25 @@ class _AccountPageState extends State<AccountPage> {
                   SizedBox(height: 50),
                   Text(dataMap['email'] ?? ''),
                   SizedBox(height: 50),
-                  EditableTextField(initialValue: dataMap['height']?.toString() ?? '', label: 'Height', profileField: 'height', unit: 'in'),
+                  MacroUpdatingTextField(
+                    initialValue: dataMap['height']?.toString() ?? '',
+                    label: 'Height',
+                    unit: 'in',
+                    profileField: 'height',
+                    currentData: dataMap,
+                  ),
                   SizedBox(height: 50),
-                  EditableTextField(initialValue: dataMap['weight']?.toString() ?? '', label: 'Weight', profileField: 'weight', unit: 'lbs'),
+                  MacroUpdatingTextField(
+                    initialValue: dataMap['weight']?.toString() ?? '',
+                    label: 'Weight',
+                    unit: 'lbs',
+                    profileField: 'weight',
+                    currentData: dataMap,
+                  ),
                   SizedBox(height: 50),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => SplashPage()),
-                      );
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromRGBO(255, 0, 0, 1),
