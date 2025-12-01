@@ -1,4 +1,4 @@
-## Forkcast
+# Forkcast
 
 Forkcast is a nutrition tracking app that lets users:
 - Log meals using AI-powered image analysis
@@ -10,7 +10,7 @@ User authentication and data persistence are handled via Firebase, and all nutri
 
 ---
 
-## Tech Stack, Libraries, and Tools
+# Tech Stack, Libraries, and Tools
 
 - **Flutter**: Cross‑platform UI framework used to build the app for mobile devices.
 - **Firebase Core (`firebase_core`)**: Initializes and connects the app to Firebase.
@@ -25,9 +25,8 @@ Navigation is driven by a simple `AuthGate` that routes authenticated users into
 
 ---
 
-## App Screenshots
+# App Screenshots
 
-```markdown
 ### Splash Page
 ![Splash Page](assets/splashpage.jpg)
 Home screen of the app that welcomes users giving the option to sign up or log in
@@ -47,4 +46,4 @@ Allows the user to take a photo of their meal or upload a photo of the meal and 
 ### Account Page
 ![Account Page](assets/accountpage.jpg)
 Page that displays user information and allows user to change their height and weight by tapping on the text field
-```
+
