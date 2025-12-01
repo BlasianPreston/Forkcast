@@ -20,6 +20,7 @@ class _MealsPageState extends State<MealsPage> {
           .collection('users')
           .doc(uid)
           .collection('meals')
+          .orderBy('timestamp', descending: true)
           .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -34,27 +35,29 @@ class _MealsPageState extends State<MealsPage> {
           body: Padding(
             padding: EdgeInsets.all(24.0),
             child: Center(
-              child: Column(
-                children: [
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) ...[
-                    const Text("No meals in your history"),
-                  ] else ...[
-                    ...meals.map((document) {
-                      // 2. Extract the data for THIS specific meal
-                      Map<String, dynamic> data = document.data();
-
-                      // 3. Return the widget
-                      return MealCard(
-                        label: data['food_name'] ?? 'Unknown Meal',
-                        calories: data['calorie_estimate'] ?? 0,
-                        imageUrl: data['image_url'],
-                        protein: data['protein'],
-                        carbs: data['carbs'],
-                        fats: data['fats'],
-                      );
-                    }),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) ...[
+                      const Text("No meals in your history"),
+                    ] else ...[
+                      ...meals.map((document) {
+                        // 2. Extract the data for THIS specific meal
+                        Map<String, dynamic> data = document.data();
+                
+                        // 3. Return the widget
+                        return MealCard(
+                          label: data['food_name'] ?? 'Unknown Meal',
+                          calories: data['calorie_estimate'] ?? 0,
+                          imageUrl: data['image_url'],
+                          protein: data['protein'],
+                          carbs: data['carbs'],
+                          fats: data['fats'],
+                        );
+                      }),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

@@ -42,9 +42,15 @@ class _AccountPageState extends State<AccountPage> {
 
         // 4. Get the download URL
         String downloadUrl = await referenceImageToUpload.getDownloadURL();
-        await FirebaseFirestore.instance.collection("users").doc(uid).set({
-          "profilePicture": downloadUrl,
-        });
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(uid)
+            .set(
+          {
+            "profilePicture": downloadUrl,
+          },
+          SetOptions(merge: true),
+        );
       } catch (e) {
         imageError = true;
         imageErrorText = e.toString();
