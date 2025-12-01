@@ -29,21 +29,26 @@ Navigation is driven by a simple `AuthGate` that routes authenticated users into
 
 ### Splash Page
 ![Splash Page](assets/splashpage.jpg)
+
 Home screen of the app that welcomes users giving the option to sign up or log in
 
 ### Health Page
 ![Health Page](assets/healthpage.jpg)
+
 Shows all of the daily health information of the user such as daily calories and macronutrients for seamless tracking
 
 ### Meals Page
 ![Meals Page](assets/mealspage.jpg)
+
 Page that displays every meal that the user has tracked through the app
 
 ### Camera Page
 ![Camera Page](assets/camerapage.jpg)
+
 Allows the user to take a photo of their meal or upload a photo of the meal and submit it for calorie tracking
 
 ### Account Page
 ![Account Page](assets/accountpage.jpg)
+
 Page that displays user information and allows user to change their height and weight by tapping on the text field
 
